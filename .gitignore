@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+# CSS added in build step
+static/css
+node_modules
+

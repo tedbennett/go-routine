@@ -1,0 +1,19 @@
+{
+  "name": "goals",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss build -o static/css/tailwind.css",
+    "watch": "tailwindcss build -o static/css/tailwind.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.1.1",
+    "prettier-plugin-go-template": "^0.0.15"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

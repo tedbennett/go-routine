@@ -30,19 +30,20 @@ func newTemplate(templates *template.Template) echo.Renderer {
 		Templates: templates,
 	}
 }
+
+//go:generate npm run build
 func main() {
 	e := echo.New()
 
-	// Little bit of middlewares for housekeeping
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
-
-	// This will initiate our template renderer
-	NewTemplateRenderer(e, "dist/*.html")
+	e.Use(middleware.Logger())
+	e.Static("static/css", "static/css")
+	NewTemplateRenderer(e, "static/*.html")
 	e.GET("/hello", func(c echo.Context) error {
 		return c.Render(http.StatusOK, "index", nil)
 	})
 
-	e.Logger.Fatal(e.Start(":4040"))
+	e.Logger.Fatal(e.Start(":8000"))
 }
