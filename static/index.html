@@ -12,9 +12,21 @@
     <link rel="stylesheet" href="/static/css/tailwind.css" />
 </head>
 
+
 <body>
-    <p class="bg-red-100">Hello, World!</p>
+    <nav
+        class="fixed top-0 w-full h-16 p-2 flex flex-row justify-between items-center border-b-gray-200 border-solid border-[1px]">
+        <span class="font-semibold text-lg">
+            Goals
+        </span>
+    </nav>
+    <div class="container mx-auto mt-16">
+        {{ range .Goals }}
+        {{ template "goal.html" . }}
+        {{ end }}
+    </div>
 </body>
+
 
 </html>
 {{end}}

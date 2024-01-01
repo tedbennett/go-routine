@@ -3,12 +3,15 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
 type GoalEntry struct {
-	Date Date `json:"date"`
+	Date   Date      `json:"date"`
+	GoalId uuid.UUID `json:"goal_id"`
 }
 
 func (g *GoalEntry) MarshalJSON() ([]byte, error) {
@@ -19,10 +22,16 @@ func (g *GoalEntry) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func FetchEntries(db *sql.DB, goalId uuid.UUID) ([]GoalEntry, error) {
-	sql := "SELECT date FROM goal_entry"
-	rows, err := db.Query(sql)
+func FetchEntries(db *sql.DB, goalIds []uuid.UUID) ([]GoalEntry, error) {
+	sql := "SELECT date, goal_id FROM goal_entry WHERE goal_id IN (?" + strings.Repeat(",?", len(goalIds)-1) + ")"
+	ids := Map(goalIds, func(id uuid.UUID) string { return id.String() })
+	args := []interface{}{}
+	for _, id := range ids {
+		args = append(args, id)
+	}
+	rows, err := db.Query(sql, args...)
 	// Exit if the SQL doesn't work for some reason
+
 	if err != nil {
 		return nil, err
 	}
@@ -32,13 +41,14 @@ func FetchEntries(db *sql.DB, goalId uuid.UUID) ([]GoalEntry, error) {
 	entries := []GoalEntry{}
 	for rows.Next() {
 		entry := GoalEntry{}
-		err2 := rows.Scan(&entry.Date)
+		err2 := rows.Scan(&entry.Date, &entry.GoalId)
 		// Exit if we get an error
 		if err2 != nil {
 			return nil, err2
 		}
 		entries = append(entries, entry)
 	}
+	fmt.Println(entries)
 	return entries, nil
 }
 
@@ -59,7 +69,6 @@ func InsertEntry(db *sql.DB, goalId uuid.UUID) (int64, error) {
 	return res.LastInsertId()
 }
 
-// Can only delete the most recent entry for now
 func DeleteEntry(db *sql.DB, goalId uuid.UUID, date Date) (int64, error) {
 	sql := "DELETE FROM goal_entry WHERE goal_id = ? AND date = ?"
 	stmt, err := db.Prepare(sql)

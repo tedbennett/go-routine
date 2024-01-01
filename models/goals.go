@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -13,9 +14,26 @@ type Goal struct {
 	Title   string      `json:"title"`
 }
 
-func FetchGoals(db *sql.DB) ([]Goal, error) {
-	sql := "SELECT id, title FROM goal"
-	rows, err := db.Query(sql)
+func FetchGoal(db *sql.DB, userId uuid.UUID, goalId uuid.UUID) (Goal, error) {
+	sql := "SELECT id, title FROM goal WHERE user_id = ? AND id = ?"
+	goal := Goal{}
+	err := db.QueryRow(sql, userId, goalId).Scan(&goal.Id, &goal.Title)
+	// Exit if the SQL doesn't work for some reason
+	if err != nil {
+		return Goal{}, err
+	}
+	// make sure to cleanup when the program exits
+	ids := []uuid.UUID{goal.Id}
+	entries, _ := FetchEntries(db, ids)
+	for _, entry := range entries {
+		goal.Entries = append(goal.Entries, entry)
+	}
+	return goal, nil
+}
+
+func FetchGoals(db *sql.DB, userId uuid.UUID) ([]Goal, error) {
+	sql := "SELECT id, title FROM goal WHERE user_id = ?"
+	rows, err := db.Query(sql, userId)
 	// Exit if the SQL doesn't work for some reason
 	if err != nil {
 		return nil, err
@@ -23,7 +41,7 @@ func FetchGoals(db *sql.DB) ([]Goal, error) {
 	// make sure to cleanup when the program exits
 	defer rows.Close()
 
-	result := []Goal{}
+	goals := []Goal{}
 	for rows.Next() {
 		goal := Goal{}
 		err2 := rows.Scan(&goal.Id, &goal.Title)
@@ -31,14 +49,31 @@ func FetchGoals(db *sql.DB) ([]Goal, error) {
 		if err2 != nil {
 			return nil, err2
 		}
-		result = append(result, goal)
+		goals = append(goals, goal)
 	}
-	return result, nil
+	ids := Map(goals, func(g Goal) uuid.UUID { return g.Id })
+	entries, _ := FetchEntries(db, ids)
+	for _, entry := range entries {
+		idx := slices.IndexFunc(goals, func(g Goal) bool { return g.Id == entry.GoalId })
+		if idx == -1 {
+			continue
+		}
+		goals[idx].Entries = append(goals[idx].Entries, entry)
+	}
+	return goals, nil
 }
 
-func InsertGoal(db *sql.DB, title string) (uuid.UUID, error) {
+func Map[T, U any](ts []T, f func(T) U) []U {
+	us := make([]U, len(ts))
+	for i := range ts {
+		us[i] = f(ts[i])
+	}
+	return us
+}
+
+func InsertGoal(db *sql.DB, userId uuid.UUID, title string) (uuid.UUID, error) {
 	id := uuid.New()
-	sql := "INSERT INTO goal(id, title) VALUES(?, ?)"
+	sql := "INSERT INTO goal(id, title, user_id) VALUES(?, ?, ?)"
 	stmt, err := db.Prepare(sql)
 	// Exit if the SQL doesn't work for some reason
 	if err != nil {
@@ -47,7 +82,7 @@ func InsertGoal(db *sql.DB, title string) (uuid.UUID, error) {
 	// make sure to cleanup when the program exits
 	defer stmt.Close()
 
-	res, err2 := stmt.Exec(id.String(), title)
+	res, err2 := stmt.Exec(id.String(), title, userId.String())
 	if err2 != nil {
 		return uuid.Nil, err2
 	}

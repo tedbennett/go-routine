@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"tb/goals/models"
 
@@ -16,8 +17,9 @@ func GetEntries(db *sql.DB) echo.HandlerFunc {
 		if err != nil {
 			return c.NoContent(http.StatusNotFound)
 		}
-		entries, err := models.FetchEntries(db, id)
+		entries, err := models.FetchEntries(db, []uuid.UUID{id})
 		if err != nil {
+			fmt.Println(err)
 			return c.NoContent(http.StatusInternalServerError)
 		}
 		return c.JSON(http.StatusOK, entries)
@@ -29,6 +31,8 @@ func PutEntry(db *sql.DB) echo.HandlerFunc {
 		goalId := c.Param("goalId")
 		id, err := uuid.Parse(goalId)
 		if err != nil {
+
+			fmt.Println(err)
 			return c.NoContent(http.StatusNotFound)
 		}
 		_, err = models.InsertEntry(db, id)

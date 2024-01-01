@@ -12,7 +12,26 @@ import (
 
 func GetGoals(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		goals, err := models.FetchGoals(db)
+		USER, _ := uuid.Parse("5c1c0569-dcd1-4c0d-87f0-0d0c1debdd5b")
+		goals, err := models.FetchGoals(db, USER)
+		if err != nil {
+			log.Println(err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		return c.JSON(http.StatusOK, goals)
+	}
+}
+
+func GetGoal(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		USER, _ := uuid.Parse("5c1c0569-dcd1-4c0d-87f0-0d0c1debdd5b")
+
+		goalId := c.Param("goalId")
+		id, err := uuid.Parse(goalId)
+		if err != nil {
+			return c.NoContent(http.StatusNotFound)
+		}
+		goals, err := models.FetchGoal(db, USER, id)
 		if err != nil {
 			log.Println(err)
 			return c.NoContent(http.StatusInternalServerError)
@@ -24,7 +43,9 @@ func GetGoals(db *sql.DB) echo.HandlerFunc {
 func PostGoal(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		title := c.FormValue("title")
-		id, err := models.InsertGoal(db, title)
+
+		USER, _ := uuid.Parse("5c1c0569-dcd1-4c0d-87f0-0d0c1debdd5b")
+		id, err := models.InsertGoal(db, USER, title)
 		if err != nil {
 			log.Println(err)
 			return c.NoContent(http.StatusInternalServerError)

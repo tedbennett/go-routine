@@ -18,7 +18,30 @@ type Date struct {
 }
 
 func (d *Date) String() string {
-	return fmt.Sprintf("%4d-%2d-%2d", d.year, d.month, d.day)
+	return fmt.Sprintf("%04d-%02d-%02d", d.year, d.month, d.day)
+}
+
+func (d *Date) Scan(src interface{}) error {
+	fmt.Println(src)
+	switch v := src.(type) {
+	case string:
+		slices := strings.Split(v, "-")
+		if len(slices) != 3 {
+			return fmt.Errorf("%T - Incorrect number of date components", src)
+		}
+		nums := []int{}
+		for _, slice := range slices {
+			num, err := strconv.Atoi(slice)
+			if err != nil {
+				return fmt.Errorf("%T - Unable to parse date component %T", src, slice)
+			}
+			nums = append(nums, num)
+		}
+
+		d.year, d.month, d.day = nums[0], nums[1], nums[2]
+		return nil
+	}
+	return fmt.Errorf("%T - Invalid type", src)
 }
 
 func DateNow() Date {
