@@ -1,6 +1,11 @@
-<div class="border-gray-200 rounded-md border-solid border-[1px]">
-    <span>{{ .Title }}</span>
-    {{range .Entries}}
-    <span>{{ .Date }}</span>
-    {{end}}
+{{define "goal"}}
+<div class="border-zinc-800 rounded-md border-solid border-2 p-2" id="goal">
+    <span class="text-lg m-2">{{ .Title }}</span>
+    <input name="goalId" value="{{ .Id }}" type="hidden">
+    <div class="flex flex-wrap flex-row mx-auto gap-2 p-2">
+        {{range .Entries}}
+        {{template "entry" .}}
+        {{end}}
+    </div>
 </div>
+{{ end}}

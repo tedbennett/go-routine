@@ -1,0 +1,8 @@
+{{define "entry"}}
+<form hx-include="previous [name='goalId']" hx-swap="outerHTML">
+    <div hx-post="/entry" {{ if .Complete }}style="background-color: {{ .Color }};" {{end}}
+        class="w-8 h-8 rounded-md {{ if not .Complete }} bg-zinc-600 {{end}}">
+    </div>
+    <input type="hidden" name="date" value="{{.Date}}">
+</form>
+{{ end }}

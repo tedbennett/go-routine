@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"tb/goals/models"
+	"tb/goals/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,7 +43,7 @@ func PutEntry(db *sql.DB) echo.HandlerFunc {
 			fmt.Println(err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-		parsed = models.TruncateToDay(parsed)
+		parsed = utils.TruncateDate(parsed)
 		_, err = models.InsertEntry(db, parsed, id)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
@@ -58,7 +59,7 @@ func DeleteEntry(db *sql.DB) echo.HandlerFunc {
 		if err != nil {
 			return c.NoContent(http.StatusNotFound)
 		}
-		now := models.TruncateToDay(time.Now())
+		now := utils.TruncateDate(time.Now())
 		_, err2 := models.DeleteEntry(db, id, now)
 		if err2 != nil {
 			return c.NoContent(http.StatusInternalServerError)

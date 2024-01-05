@@ -1,0 +1,15 @@
+{{ define "create_routine_form" }}
+
+<form class="border-zinc-800 rounded-md border-solid border-2 p-2" hx-post="/routine" hx-target="#routine-list"
+    hx-swap="beforeend">
+    <span class="pl-1 text-sm text-zinc-400">Create Routine</span>
+    <div class="flex flex-row justify-between items-center">
+        <input type="color" class="rounded-md" name="color">
+        <input type="text" name="title"
+            class="block rounded-md shadow-sm ring-0 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 flex-1 p-1 border-1 border-zinc-800 bg-transparent text-white placeholder:text-gray-400 "
+            placeholder="Goal title">
+        <button type="submit">Create</button>
+    </div>
+</form>
+
+{{ end }}

@@ -45,7 +45,7 @@ func PostGoal(db *sql.DB) echo.HandlerFunc {
 		title := c.FormValue("title")
 
 		USER, _ := uuid.Parse("5c1c0569-dcd1-4c0d-87f0-0d0c1debdd5b")
-		id, err := models.InsertGoal(db, USER, title)
+		id, err := models.InsertGoal(db, USER, title, "#000000")
 		if err != nil {
 			log.Println(err)
 			return c.NoContent(http.StatusInternalServerError)
